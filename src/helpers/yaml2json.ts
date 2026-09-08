@@ -1,41 +1,34 @@
-const _load_yaml2json = async () => {
-  if (customElements.get("developer-tools-event")) return;
+import { load, YAML11_SCHEMA, YAMLException } from "js-yaml";
 
+export const yaml2json = (key: string, yaml: string): Record<string, any> => {
   try {
-    await customElements.whenDefined("partial-panel-resolver");
-    const ppr: any = document.createElement("partial-panel-resolver");
-
-    ppr.hass = {
-      panels: [
-        {
-          url_path: "tmp",
-          component_name: "config",
-        },
-      ],
-    };
-    ppr._updateRoutes();
-
-    await ppr.routerOptions.routes.tmp.load();
-    await customElements.whenDefined("ha-panel-config");
-    const hpc: any = document.createElement("ha-panel-config");
-    await hpc.routerOptions.routes['developer-tools']?.load();
-    await customElements.whenDefined("developer-tools-router");
-    const dtr: any = document.createElement("developer-tools-router");
-    await dtr.routerOptions.routes.event.load();
-  } catch (err) {
-    console.error("CARD-MOD: Error loading yaml2json:", err);
-  }
-};
-
-export const yaml2json = async (yaml) => {
-  await _load_yaml2json();
-  const el: any = document.createElement("ha-yaml-editor");
-  el.hass = {};
-  el.hass.localize = (any) => "Invalid YAML";
-  el._onChange(new CustomEvent("yaml", { detail: { value: yaml } }));
-  if (!el.isValid) {
-    console.error("CARD-MOD: Error loading theme yaml:", yaml);
+    const parsed = load(yaml, { schema: YAML11_SCHEMA });
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("Expected YAML document root to be a mapping");
+    }
+    return parsed as Record<string, any>;
+  } catch (error: unknown) {
+    const mark = error instanceof YAMLException ? error.mark : undefined;
+    const reason =
+      error instanceof YAMLException
+        ? error.reason
+        : error instanceof Error
+          ? error.message
+          : String(error);
+    const where = mark
+      ? ` at line ${mark.line + 1}, column ${mark.column + 1}`
+      : "";
+    console.groupCollapsed(`CARD-MOD: Error loading theme key ${key}`);
+    console.log(`${reason}${where}`);
+    console.log(
+      String(yaml)
+        .split("\n")
+        .map(
+          (line, i) => `${i === mark?.line ? ">>" : "  "}${i + 1}: ${line}`,
+        )
+        .join("\n"),
+    );
+    console.groupEnd();
     return {};
   }
-  return el.value;
 };
