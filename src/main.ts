@@ -26,20 +26,31 @@ import "./patch/ha-panel-developer-tools";
 import "./mod-card";
 import "./theme-watcher";
 
-const scriptElements = document.querySelectorAll("script");
-const resources = [];
-for (const script of scriptElements) {
-  if (script?.innerText?.trim()?.startsWith("import(")) {
-    const imports = script.innerText.split("\n")?.map((e) => e.trim());
-    for (const imp of imports) {
-      resources.push(imp.replace(/^import\(\"/, "").replace(/\"\);/, ""));
-    }
-  }
-}
+// `frontend.extra_module_url` entries are emitted by the backend as an inline
+// import block in index.html. Home Assistant now prefixes that block with a
+// comment and wraps each import in a `.catch()`:
+//
+//   // Caught, or the boot recovery guard reads it as a stale build.
+//   import("/hacsfiles/lovelace-card-mod/card-mod.js?hacstag=1").catch(...);
+//
+// so requiring the script to *start with* `import(` reported "not loaded as a
+// module" on instances that were configured correctly, and the `");` suffix no
+// longer terminates the statement either. Match the import anywhere in the
+// inline script instead of trying to reconstruct the URL.
+//
+// Only inline scripts are inspected, on purpose: Lovelace resources are loaded
+// by the frontend with a runtime `import()` that appends its own
+// `<script type="module" src=...>`, and those must not count as a frontend
+// module or the notice could never fire.
+const loadedAsFrontendModule = Array.from(
+  document.querySelectorAll("script")
+).some(
+  (script) =>
+    !script.src &&
+    /import\(\s*["'][^"']*\/card-mod\.js/.test(script.textContent ?? "")
+);
 
-if (resources.some((r) => r.includes("/card-mod.js"))) {
-  // console.info("Card-mod is loaded as a module");
-} else {
+if (!loadedAsFrontendModule) {
   console.info(
     "You may not be getting optimal performance out of card-mod.\nSee https://github.com/thomasloven/lovelace-card-mod#performance-improvements"
   );
