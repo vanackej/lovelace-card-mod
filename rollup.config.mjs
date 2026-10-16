@@ -9,7 +9,13 @@ const dev = process.env.ROLLUP_WATCH;
 export default {
   input: "src/main.ts",
   output: {
-    file: "card-mod.js",
+    // js-yaml is imported dynamically (helpers/yaml_parser.ts) and lands in its
+    // own chunk. HACS installs every file under dist/, and the chunk resolves
+    // next to card-mod.js. The hash in its name busts the cache on change,
+    // since the hacstag query on card-mod.js does not reach it.
+    dir: "dist",
+    entryFileNames: "card-mod.js",
+    chunkFileNames: "[name]-[hash].js",
     format: "es",
   },
   plugins: [
@@ -34,6 +40,8 @@ export default {
               safari: "26",
             },
             bugfixes: true,
+            // Leave import() alone: rollup already emits ES modules.
+            modules: false,
           },
         ],
       ],

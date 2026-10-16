@@ -20,6 +20,7 @@ reports "may style" whenever hass is not yet reachable.
 */
 
 import { note_theme_keys } from "./icon_usage";
+import { theme_key_names } from "./themes";
 
 let themeKeys: Set<string> | null = null;
 
@@ -52,7 +53,12 @@ document.addEventListener("cm_update", refresh_theme_index);
 export const theme_may_style = (type: string): boolean => {
   if (themeKeys === null) refresh_theme_index();
   if (themeKeys === null) return true; // hass not ready yet — assume it might
-  return (
-    themeKeys.has(`card-mod-${type}`) || themeKeys.has(`card-mod-${type}-yaml`)
+  // Follow the legacy aliases (card-mod-developer-tools for the tools panel),
+  // and let a -debug key through so debugging a theme still logs.
+  return theme_key_names(type).some(
+    (name) =>
+      themeKeys!.has(`card-mod-${name}`) ||
+      themeKeys!.has(`card-mod-${name}-yaml`) ||
+      themeKeys!.has(`card-mod-${name}-debug`)
   );
 };
