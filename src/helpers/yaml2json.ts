@@ -1,6 +1,21 @@
-import { load, YAML11_SCHEMA, YAMLException } from "js-yaml";
+// js-yaml is only needed for card-mod-*-yaml theme keys, and would nearly double
+// the bundle. Rollup splits it into its own chunk next to card-mod.js, fetched
+// the first time such a key is actually parsed.
+let jsYaml: Promise<typeof import("./yaml_parser")> | undefined;
 
-export const yaml2json = (key: string, yaml: string): Record<string, any> => {
+export const yaml2json = async (
+  key: string,
+  yaml: string,
+): Promise<Record<string, any>> => {
+  let lib: typeof import("./yaml_parser");
+  try {
+    lib = await (jsYaml ??= import("./yaml_parser"));
+  } catch (error: unknown) {
+    jsYaml = undefined; // let a later lookup retry
+    console.error(`CARD-MOD: Could not load the YAML parser for ${key}:`, error);
+    return {};
+  }
+  const { load, YAML11_SCHEMA, YAMLException } = lib;
   try {
     const parsed = load(yaml, { schema: YAML11_SCHEMA });
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {

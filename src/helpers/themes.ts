@@ -19,10 +19,10 @@ export function theme_key_names(type: string): string[] {
   return [type, ...(THEME_TYPE_ALIASES[type] ?? [])];
 }
 
-export function theme_styles_for_type(
+export async function theme_styles_for_type(
   theme: Record<string, any> | undefined,
   type: string,
-): CardModStyle {
+): Promise<CardModStyle> {
   if (!theme) return {};
   const names = theme_key_names(type);
   for (const name of names) {
