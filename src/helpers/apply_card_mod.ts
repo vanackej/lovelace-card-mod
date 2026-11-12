@@ -2,13 +2,19 @@ import { LitElement } from "lit";
 import { CardMod } from "../card-mod";
 import { theme_may_style } from "./theme_index";
 
+// These methods are copied onto existing prototypes by patch_object, which
+// never runs this class's constructor: the field initialiser below does not
+// reach patched elements, and _cardMod stays undefined until apply_card_mod
+// creates it. Every patched element that card-mod has not styled (yet) would
+// otherwise throw here, and the throw in updated() surfaces as an unhandled
+// promise rejection on every update.
 export class ModdedElement extends LitElement {
   _cardMod: CardMod[] = [];
   modElement?: ModdedElement;
 
   setConfig(_orig, config, ...args) {
     _orig?.(config, ...args);
-    this._cardMod.forEach((cm) => {
+    this._cardMod?.forEach((cm) => {
       cm.variables = { config };
       cm.styles = config.card_mod?.style || {};
     });
@@ -17,7 +23,7 @@ export class ModdedElement extends LitElement {
   updated(_orig, ...args) {
     _orig?.(...args);
     Promise.all([this.updateComplete]).then(() =>
-      this._cardMod.forEach((cm) => cm.refresh?.())
+      this._cardMod?.forEach((cm) => cm.refresh?.())
     );
   }
 }
