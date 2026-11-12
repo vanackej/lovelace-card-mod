@@ -15,6 +15,7 @@ import {
 } from "./helpers/apply_card_mod";
 import { compare_deep, merge_deep } from "./helpers/dict_functions";
 import { note_styles } from "./helpers/icon_usage";
+import { uses_hash } from "./helpers/panel";
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -76,8 +77,11 @@ export class CardMod extends LitElement {
   }
 
   _cmUpdateListener = (ev: Event) => {
-    this.dynamicVariablesHaveChanged =
-      (ev as CustomEvent).detail?.variablesChanged || false;
+    const detail = (ev as CustomEvent).detail;
+    // Only the URL fragment changed: styles that never mention `hash` render
+    // the same, keep them and their template subscriptions.
+    if (detail?.hashOnly && !uses_hash(this._fixed_styles)) return;
+    this.dynamicVariablesHaveChanged = detail?.variablesChanged || false;
     if (!this.isConnected) {
       this._processStylesOnConnect = true;
       return;

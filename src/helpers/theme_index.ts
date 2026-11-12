@@ -47,8 +47,12 @@ export const refresh_theme_index = () => {
 };
 
 // cm_update is dispatched by theme-watcher whenever themes are reloaded or the
-// selected theme changes.
-document.addEventListener("cm_update", refresh_theme_index);
+// selected theme changes, and by panel.ts on navigation. A change of the URL
+// fragment alone cannot change the themes.
+document.addEventListener("cm_update", (ev) => {
+  if ((ev as CustomEvent).detail?.hashOnly) return;
+  refresh_theme_index();
+});
 
 export const theme_may_style = (type: string): boolean => {
   if (themeKeys === null) refresh_theme_index();

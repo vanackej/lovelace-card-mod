@@ -141,17 +141,41 @@ export function getPanelState(): Promise<any> {
   return PanelState as Promise<any>;
 }
 
+export type PanelStateChange = "none" | "hash" | "panel";
+
+// Templates receive both `hash` and `panel` as variables (bind_template). A
+// navigation that only moves the URL fragment, as pop-ups opened through
+// location.hash do, changes `hash` alone: re-rendering every style on the page
+// for it made the whole dashboard flash and re-subscribed every template.
+export function panel_state_change(before, after): PanelStateChange {
+  if (!before || !after) return "panel";
+  if (JSON.stringify(before.panel) !== JSON.stringify(after.panel))
+    return "panel";
+  return before.hash === after.hash ? "none" : "hash";
+}
+
+// Whether a style can depend on the `hash` variable. A false positive only
+// costs a re-render; a template cannot read `hash` without naming it.
+export function uses_hash(styles): boolean {
+  const text = typeof styles === "string" ? styles : JSON.stringify(styles);
+  return /\bhash\b/.test(text ?? "");
+}
+
 window.addEventListener("card-mod-bootstrap", async (ev: CustomEvent) => {
   ev.stopPropagation();
   ["popstate", "location-changed"].forEach((event) => {
     window.addEventListener(event, async () => {
+      const previous = PanelState;
       PanelState = null;
       _panel_state_update();
-      PanelState.then(() => {
-        document.dispatchEvent(
-          new CustomEvent("cm_update", { detail: { variablesChanged: true } })
-        );
-      });
+      const [before, after] = await Promise.all([previous, PanelState]);
+      const change = panel_state_change(before, after);
+      if (change === "none") return;
+      document.dispatchEvent(
+        new CustomEvent("cm_update", {
+          detail: { variablesChanged: true, hashOnly: change === "hash" },
+        })
+      );
     });
   });
 });
