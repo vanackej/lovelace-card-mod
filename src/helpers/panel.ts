@@ -163,6 +163,10 @@ export function uses_hash(styles): boolean {
 
 window.addEventListener("card-mod-bootstrap", async (ev: CustomEvent) => {
   ev.stopPropagation();
+  // A baseline for the first navigation to compare with: without it, a view
+  // where no template ever read the panel state would re-render everything
+  // on the first hash change.
+  getPanelState();
   ["popstate", "location-changed"].forEach((event) => {
     window.addEventListener(event, async () => {
       const previous = PanelState;
