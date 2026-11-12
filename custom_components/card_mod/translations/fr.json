@@ -1,0 +1,19 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "card-mod",
+        "description": "card-mod sera chargé sur chaque page avant l'affichage des tableaux de bord, et déclaré comme ressource de tableau de bord pour Google Cast. Retirez d'abord toute autre copie de card-mod : le plugin de tableau de bord card-mod, une ressource de tableau de bord card-mod, ou une entrée card-mod sous `frontend: extra_module_url`."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "card-mod est déjà configuré."
+    }
+  },
+  "issues": {
+    "duplicate_card_mod": {
+      "title": "card-mod est chargé deux fois",
+      "description": "Une autre copie de card-mod est déclarée :\n\n{urls}\n\nElle modifie une seconde fois les mêmes éléments et produit des avertissements `already patched` dans le navigateur. Retirez-la : désinstallez le plugin de tableau de bord card-mod, supprimez cette ressource de tableau de bord, ou retirez-la de `frontend: extra_module_url`. Rechargez ensuite la page ; les appareils qui affichent encore l'avertissement doivent vider le cache du frontend."
+    }
+  }
+}

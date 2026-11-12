@@ -1,0 +1,4 @@
+# Integration tests. The Home Assistant version comes with the harness; the
+# frontend package must match it (home-assistant-frontend pin in its
+# components/frontend/manifest.json), see .github/workflows/validate.yml.
+pytest-homeassistant-custom-component

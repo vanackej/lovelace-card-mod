@@ -1,67 +1,37 @@
-# card-mod 4
+# card-mod
 
 Allows you to apply CSS styles to various elements of the Home Assistant frontend.
 
 ## Installing
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
+> **This fork ships card-mod as a Home Assistant integration** (since 5.0.0).
+> Upstream `thomasloven/lovelace-card-mod` has had no release since 4.2.1; this
+> fork carries the fixes for Home Assistant 2026.8 and later, and the
+> performance work in [CHANGES-FORK.md](CHANGES-FORK.md).
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=thomasloven&repository=lovelace-card-mod)
+1. Remove every other copy of card-mod first: the card-mod dashboard plugin
+   (HACS / Marketplace), any card-mod dashboard resource, and any card-mod
+   entry under `frontend: extra_module_url:`.
+2. Add `https://github.com/vanackej/lovelace-card-mod` to the Marketplace (or
+   HACS) as a custom repository of type **Integration**, and install it.
+3. Settings > Devices & services > Add integration > **card-mod**.
 
-Install using HACS or [see this guide](https://github.com/thomasloven/hass-config/wiki/Lovelace-Plugins).
+That is all: nothing to write in `configuration.yaml`, nothing to update by
+hand afterwards. The integration serves card-mod under `/card_mod/` and
+registers `card-mod.js?v=<version>-<content hash>` both as a frontend module,
+so it loads before any card on every page (sidebar and other panels
+included), and as a dashboard resource, which Google Cast needs. Both use the
+same URL, so the browser loads card-mod once; each update changes the URL, so
+browsers fetch the new version on the next page load after the restart the
+update asks for.
 
-### Performance improvements
+If another copy of card-mod is still registered, the integration raises a
+repair listing its URL. Devices that keep logging `already patched` after it
+is gone need their frontend cache cleared (see
+[Clearing Home Assistant Frontend application cache](#clearing-home-assistant-frontend-application-cache)).
 
-While card-mod can be installed as a [lovelace resource](https://www.home-assistant.io/lovelace/dashboards/#resources), some functionality<sup>1</sup> will benefit greatly from it being installed as a [frontend module](https://www.home-assistant.io/integrations/frontend/#extra_module_url) instead.
-
-To do that, add the following to your `configuration.yaml` file and restart Home Assistant. See [card_mod resource URL](#card_mod-resource-url) section below for how to find/use this URL.
-
-```yaml
-frontend:
-  extra_module_url:
-    - /[card_mod resource URL]
-```
-
-#### card_mod resource URL
-
-The card_mod resource URL is dependent on where/how you have installed `card-mod.js`.
-
-- If you installed through HACS, this is likely similar to `/hacsfiles/lovelace-card-mod/card-mod.js?hacstag=12345678901`. Here `hacstag=12345678901` is just an example. Your actual card_mod HACS resource URL will be different.
-- If you manage resources due to using YAML mode<sup>3</sup> or are not using HACS your resource url may be different.
-
-When installing through HACS your Dashboard<sup>2</sup> lovelace resource definition will be automatically added in Dashboard resources which you can access via the button below. To find it in your own HACS instance, navigate to Settings > Dashboards and then click the 3-dot menu, which will display "Resources". Your URL will be displayed there with the `hacstag` value.
-
-[![Open your Home Assistant instance and show your dashboard resources.](https://my.home-assistant.io/badges/lovelace_resources.svg)](https://my.home-assistant.io/redirect/lovelace_resources/)
-
-Example Dashboard<sup>2</sup> lovelace resource definition when installed through HACS.
-
-```
-/hacsfiles/lovelace-card-mod/card-mod.js?hacstag=12345678901
-```
-
-In `configuration.yaml` add your exact resource path to `frontend:` `extra_module_url:`. NOTE: All resource paths listed here are **EXAMPLES ONLY**.
-When updating card-mod through HACS make sure to update your `extra_module_url:` manually to match. This is critically important as it prevents the resource being loaded twice.
-
-```yaml
-frontend:
-  extra_module_url:
-    - /hacsfiles/lovelace-card-mod/card-mod.js?hacstag=12345678901
-```
-
-**NOTE**: If you manage your resource URLs in YAML and do not use CAST, you do not need a resource URL at all. In this case you can just use `extra_module_url`. It is recommended that you use a cache busting technique to assist with caching of old files on update. e.g. `...\card-mod.js?v4.0.0` updating the version when you update card-mod.
-
-_1. Installing card-mod as a Frontend module via `extra_module_url` will provide performance improvements to non-CAST devices e.g. enhanced speed in applying card-mod to cards, especially when using card-mod themes. Installing card-mod as a Frontend module is also required if you are using card-mod to style panels of Home Assistant which are not Lovelace dashboards, as Dashboard resources are not loaded for those panels. This includes styling the sidebar in your theme for these panels._
-
-_2. Dashboard lovelace resource definition is required to enable card-mod to be applied to dashboards on CAST devices._
-
-_3. Since Home Assistant 2026.2 YAML Dashboards can set `resource_mode` to either `yaml` or `storage`. When set to `yaml` resources are managed in yaml mode. You can set to `storage` to manage resources using UI and also allowing HACS to manage resources directly._
-
-**IMPORTANT**:
-
-1. Any resource definitions automatically added by HACS should be kept as is even after adding `extra_module_url`. This enables you to keep track when updating via HACS.
-2. Whenever you alter `extra_module_url` you need to restart Home Assistant.
-3. Starting from version 4.2.0, if a patching version mismatch is detected, both a Browser console warning and Home Assistant notification will be created listing both the card-mod version checking for duplicates, as well as the version which has already run patching code. e.g. `CARD-MOD (4.2.1): hui-card already patched by 4.2.0!` If the later version is earlier than the checking version, then this is a critical issue that needs to be addressed immediately as you will not be running up to date patching code. If both versions are the same, it indicates that you have duplicate resource URLs and may end up in a critical version state. For both cases, refer to the information above to implement the recommended approach for your installation. _Note: Any version prior to 4.2.0 will show as `unknown version` as version was not tracked in patching check prior to 4.2.0._
-4. If you continue to get notifications from devices regarding duplicate patching, you may need to clear the Home Assistant Frontend application cache for that device. This may happen immediately or after some time depending on what starting pages have been cached in the Home Assistant Frontend application cache. See this [GUIDE](https://github.com/thomasloven/hass-config/wiki/Clearing-your-browser-cache) for clearing caches. Card_mod includes a custom event to action clearing the Home Assistant Frontend application cache. See [Clearing Home Assistant Frontend application cache](#clearing-home-assistant-frontend-application-cache).
+With dashboard resources in YAML mode, the integration cannot write the
+resource: card-mod still loads as a frontend module, and only Cast misses it.
 
 ## Home Assistant version compatability
 

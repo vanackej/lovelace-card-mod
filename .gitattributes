@@ -1,2 +1,3 @@
 card-mod.js binary
 src/card-mod.js -binary
+custom_components/card_mod/frontend/** -diff linguist-generated

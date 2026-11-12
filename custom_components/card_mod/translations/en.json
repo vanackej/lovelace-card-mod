@@ -1,0 +1,19 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "card-mod",
+        "description": "card-mod will load on every page before the dashboards render, and be registered as a dashboard resource for Google Cast. Remove any other copy of card-mod first: the card-mod dashboard plugin, a card-mod dashboard resource, or a card-mod entry under `frontend: extra_module_url`."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "card-mod is already set up."
+    }
+  },
+  "issues": {
+    "duplicate_card_mod": {
+      "title": "card-mod is loaded twice",
+      "description": "Another copy of card-mod is registered:\n\n{urls}\n\nIt patches the same elements a second time and logs `already patched` warnings in the browser. Remove it: uninstall the card-mod dashboard plugin, delete that dashboard resource, or remove it from `frontend: extra_module_url`. Then reload the page; devices that still show the warning need their frontend cache cleared."
+    }
+  }
+}

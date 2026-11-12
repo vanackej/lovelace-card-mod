@@ -1,6 +1,5 @@
 {
   "name": "card-mod",
   "render_readme": true,
-  "filename": "card-mod.js",
   "homeassistant": "2026.8.0"
 }

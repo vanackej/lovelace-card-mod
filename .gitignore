@@ -1,2 +1,7 @@
 node_modules/
-custom_components/
+# Built by `npm run build`; committed only in release commits (git add -f)
+custom_components/card_mod/frontend/
+# Python test environment
+.venv/
+__pycache__/
+.pytest_cache/

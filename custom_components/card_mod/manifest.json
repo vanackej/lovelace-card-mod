@@ -1,0 +1,13 @@
+{
+  "domain": "card_mod",
+  "name": "card-mod",
+  "codeowners": ["@vanackej"],
+  "config_flow": true,
+  "dependencies": ["frontend", "http", "lovelace"],
+  "documentation": "https://github.com/vanackej/lovelace-card-mod",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/vanackej/lovelace-card-mod/issues",
+  "single_config_entry": true,
+  "version": "4.4.0"
+}
